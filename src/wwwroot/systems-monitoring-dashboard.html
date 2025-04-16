@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Systems Monitoring Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --success-light: #dcfce7;
+            --warning: #eab308;
+            --warning-light: #fef9c3;
+            --danger: #dc2626;
+            --danger-light: #fee2e2;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f9fafb;
+            color: var(--gray-800);
+        }
+        
+        header {
+            background-color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: bold;
+            font-size: 1.25rem;
+            color: var(--gray-900);
+        }
+        
+        .logo i {
+            color: var(--primary);
+        }
+        
+        nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--gray-700);
+            font-weight: 500;
+        }
+        
+        nav a:hover {
+            color: var(--primary);
+        }
+        
+        main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .dashboard-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--gray-900);
+        }
+        
+        .status-summary {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            background-color: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .indicator-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+        }
+        
+        .status-green { background-color: var(--success); }
+        .status-yellow { background-color: var(--warning); }
+        .status-red { background-color: var(--danger); }
+        
+        .systems-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .system-bar {
+            width: 100%;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .system-header {
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .system-header:hover {
+            filter: brightness(0.98);
+        }
+        
+        .system-header.status-healthy {
+            background-color: var(--success-light);
+            border-left: 4px solid var(--success);
+        }
+        
+        .system-header.status-warning {
+            background-color: var(--warning-light);
+            border-left: 4px solid var(--warning);
+        }
+        
+        .system-header.status-critical {
+            background-color: var(--danger-light);
+            border-left: 4px solid var(--danger);
+        }
+        
+        .system-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--gray-900);
+        }
+        
+        .system-health {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .health-metric {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .health-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 0.875rem;
+        }
+        
+        .health-icon.cpu {
+            background-color: rgba(236, 72, 153, 0.1);
+            color: #ec4899;
+        }
+        
+        .health-icon.memory {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+        
+        .health-icon.disk {
+            background-color: rgba(14, 165, 233, 0.1);
+            color: #0ea5e9;
+        }
+        
+        .health-icon.response {
+            background-color: rgba(234, 88, 12, 0.1);
+            color: #ea580c;
+        }
+        
+        .system-content {
+            display: none;
+            padding: 1.5rem;
+            border-top: 1px solid var(--gray-200);
+            background-color: white;
+        }
+        
+        .system-content.active {
+            display: block;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .panel-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--gray-200);
+            margin-bottom: 1.5rem;
+        }
+        
+        .panel-tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+        }
+        
+        .panel-tab.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .tab-pane {
+            display: none;
+        }
+        
+        .tab-pane.active {
+            display: block;
+        }
+        
+        .metric-charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart {
+            background-color: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.375rem;
+            padding: 1rem;
+        }
+        
+        .chart-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .chart-placeholder {
+            width: 100%;
+            height: 150px;
+            background-color: var(--gray-100);
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-500);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .data-table th {
+            background-color: var(--gray-100);
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        
+        .event-list {
+            border: 1px solid var(--gray-200);
+            border-radius: 0.375rem;
+            overflow: hidden;
+        }
+        
+        .event-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .event-item:last-child {
+            border-bottom: none;
+        }
+        
+        .event-icon {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .event-icon.info {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+        }
+        
+        .event-icon.warning {
+            background-color: rgba(234, 179, 8, 0.1);
+            color: var(--warning);
+        }
+        
+        .event-icon.error {
+            background-color: rgba(220, 38, 38, 0.1);
+            color: var(--danger);
+        }
+        
+        .event-content {
+            flex-grow: 1;
+        }
+        
+        .event-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .event-time {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+        
+        .log-container {
+            height: 300px;
+            overflow-y: auto;
+            background-color: var(--gray-900);
+            color: white;
+            font-family: monospace;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+        }
+        
+        .log-entry {
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+        }
+        
+        .log-time {
+            color: var(--gray-400);
+            margin-right: 0.5rem;
+        }
+        
+        .log-error {
+            color: #f87171;
+        }
+        
+        .log-warning {
+            color: #fbbf24;
+        }
+        
+        .log-info {
+            color: #60a5fa;
+        }
+        
+        .arrow-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .system-header.expanded .arrow-icon {
+            transform: rotate(180deg);
+        }
+        
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line"></i>
+            <span>SysMonitor</span>
+        </div>
+        <nav>
+            <a href="#">Dashboard</a>
+            <a href="#">Systems</a>
+            <a href="#">Alerts</a>
+            <a href="#">Reports</a>
+            <a href="#">Settings</a>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Systems Overview</h1>
+            <div class="status-summary">
+                <div class="status-indicator">
+                    <div class="indicator-dot status-green"></div>
+                    <span>12 Healthy</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="indicator-dot status-yellow"></div>
+                    <span>3 Warning</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="indicator-dot status-red"></div>
+                    <span>1 Critical</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="systems-list">
+            <!-- Database Server -->
+            <div class="system-bar">
+                <div class="system-header status-warning" onclick="toggleSystem('db-server')">
+                    <div class="system-title">
+                        <i class="fas fa-database"></i>
+                        Database Server
+                    </div>
+                    <div class="system-health">
+                        <div class="health-metric">
+                            <div class="health-icon cpu">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <span>42%</span>
+                        </div>
+                        <div class="health-metric">
+                            <div class="health-icon memory">
+                                <i class="fas fa-memory"></i>
+                            </div>
+                            <span>78%</span>
+                        </div>
+                        <div class="health-metric">
+                            <div class="health-icon disk">
+                                <i class="fas fa-hdd"></i>
+                            </div>
+                            <span>89%</span>
+                        </div>
+                        <div class="health-metric">
+                            <div class="health-icon response">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <span>120ms</span>
+                        </div>
+                        <i class="fas fa-chevron-down arrow-icon"></i>
+                    </div>
+                </div>
+                <div id="db-server" class="system-content active">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Database Server Details</h3>
+                        <div class="actions">
+                            <button class="button primary-button">Run Diagnostics</button>
+                            <button class="button secondary-button">Restart Service</button>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-tabs">
+                        <div class="panel-tab active" onclick="switchTab('db-overview', 'db')">Overview</div>
+                        <div class="panel-tab" onclick="switchTab('db-queries', 'db')">Queries</div>
+                        <div class="panel-tab" onclick="switchTab('db-storage', 'db')">Storage</div>
+                    </div>
+                    
+                    <div id="db-overview" class="tab-pane active">
+                        <div class="metric-charts">
+                            <div class="chart">
+                                <div class="chart-title">Database Connections</div>
+                                <div class="chart-placeholder">Connection trend chart</div>
+                            </div>
+                            <div class="chart">
+                                <div class="chart-title">Query Response Time</div>
+                                <div class="chart-placeholder">Response time chart</div>
+                            </div>
+                        </div>
+                        
+                        <h4>Active Connections</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Host</th>
+                                    <th>Database</th>
+                                    <th>Command</th>
+                                    <th>Time</th>
+                                    <th>State</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>15234</td>
+                                    <td>app_user</td>
+                                    <td>10.0.1.45</td>
+                                    <td>customers</td>
+                                    <td>Query</td>
+                                    <td>3s</td>
+                                    <td>executing</td>
+                                </tr>
+                                <tr>
+                                    <td>15235</td>
+                                    <td>app_user</td>
+                                    <td>10.0.1.46</td>
+                                    <td>products</td>
+                                    <td>Sleep</td>
+                                    <td>120s</td>
+                                    <td>idle</td>
+                                </tr>
+                                <tr>
+                                    <td>15236</td>
+                                    <td>admin</td>
+                                    <td>10.0.1.1</td>
+                                    <td>system</td>
+                                    <td>Query</td>
+                                    <td>15s</td>
+                                    <td>executing</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="db-queries" class="tab-pane">
+                        <h4>Slow Queries (Last 24h)</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Query</th>
+                                    <th>Execution Time</th>
+                                    <th>Rows Examined</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>SELECT * FROM orders WHERE created_at > '2025-01-01'</td>
+                                    <td>3.45s</td>
+                                    <td>1,245,678</td>
+                                    <td>10:12:45</td>
+                                </tr>
+                                <tr>
+                                    <td>SELECT c.name, sum(o.amount) FROM customers c JOIN orders o ON c.id = o.customer_id GROUP BY c.id</td>
+                                    <td>2.82s</td>
+                                    <td>856,342</td>
+                                    <td>09:34:21</td>
+                                </tr>
+                                <tr>
+                                    <td>UPDATE products SET stock = stock - 1 WHERE id IN (SELECT product_id FROM order_items WHERE order_id = 45678)</td>
+                                    <td>1.95s</td>
+                                    <td>12,453</td>
+                                    <td>08:15:37</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="db-storage" class="tab-pane">
+                        <div class="metric-charts">
+                            <div class="chart">
+                                <div class="chart-title">Database Size Growth</div>
+                                <div class="chart-placeholder">Size growth chart</div>
+                            </div>
+                            <div class="chart">
+                                <div class="chart-title">Disk Space Usage</div>
+                                <div class="chart-placeholder">Disk usage chart</div>
+                            </div>
+                        </div>
+                        
+                        <h4>Database Sizes</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Database</th>
+                                    <th>Size</th>
+                                    <th>Tables</th>
+                                    <th>Indexes</th>
+                                    <th>Growth (7d)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>customers</td>
+                                    <td>256 GB</td>
+                                    <td>24</td>
+                                    <td>45</td>
+                                    <td>+6.5%</td>
+                                </tr>
+                                <tr>
+                                    <td>products</td>
+                                    <td>128 GB</td>
+                                    <td>12</td>
+                                    <td>28</td>
+                                    <td>+2.1%</td>
+                                </tr>
+                                <tr>
+                                    <td>orders</td>
+                                    <td>512 GB</td>
+                                    <td>18</td>
+                                    <td>36</td>
+                                    <td>+8.3%</td>
+                                </tr>
+                                <tr>
+                                    <td>analytics</td>
+                                    <td>750 GB</td>
+                                    <td>42</td>
+                                    <td>78</td>
+                                    <td>+12.7%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Web Server -->
+            <div class="system-bar">
+                <div class="system-header status-healthy" onclick="toggleSystem('web-server')">
+                    <div class="system-title">
+                        <i class="fas fa-server"></i>
+                        Web Server
+                    </div>
+                    <div class="system-health">
+                        <div class="health-metric">
+                            <div class="health-icon cpu">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <span>26%</span>
+                        </div>
+                        <div class="health-metric">
+                            <div class="health-icon memory">
+                                <i class="fas fa-memory"></i>
+                            </div>
+                            <span>45%</span>
+                        </div>
+                        <div class="health-metric">
+                            <div class="health-icon response">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <span>87ms</span>
+                        </div>
+                        <div class="health-metric">
+                            <div class="health-icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <span>348/s</span>
+                        </div>
+                        <i class="fas fa-chevron-down arrow-icon"></i>
+                    </div>
+                </div>
+                <div id="web-server" class="system-content active">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Web Server Details</h3>
+                        <div class="actions">
+                            <button class="button primary-button">View Traffic</button>
+                            <button class="button secondary-button">Clear Cache</button>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-tabs">
+                        <div class="panel-tab active" onclick="switchTab('web-traffic', 'web')">Traffic</div>
+                        <div class="panel-tab" onclick="switchTab('web-errors', 'web')">Errors</div>
+                        <div class="panel-tab" onclick="switchTab('web-performance', 'web')">Performance</div>
+                    </div>
+                    
+                    <div id="web-traffic" class="tab-pane active">
+                        <div class="metric-charts">
+                            <div class="chart">
+                                <div class="chart-title">Requests per Minute</div>
+                                <div class="chart-placeholder">Requests chart</div>
+                            </div>
+                            <div class="chart">
+                                <div class="chart-title">Response Time (ms)</div>
+                                <div class="chart-placeholder">Response time chart</div>
+                            </div>
+                        </div>
+                        
+                        <h4>Top URLs (Last Hour)</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>URL</th>
+                                    <th>Requests</th>
+                                    <th>Avg. Response</th>
+                                    <th>Error Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>/api/products</td>
+                                    <td>12,456</td>
+                                    <td>65ms</td>
+                                    <td>0.02%</td>
+                                </tr>
+                                <tr>
+                                    <td>/api/orders</td>
+                                    <td>8,973</td>
+                                    <td>92ms</td>
+                                    <td>0.1%</td>
+                                </tr>
+                                <tr>
+                                    <td>/api/users/auth</td>
+                                    <td>6,234</td>
+                                    <td>45ms</td>
+                                    <td>0.05%</td>
+                                </tr>
+                                <tr>
+                                    <td>/api/cart</td>
+                                    <td>4,532</td>
+                                    <td>78ms</td>
+                                    <td>0.03%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="web-errors" class="tab-pane">
+                        <h4>Recent Error Log</h4>
+                        <div class="log-container">
+                            <div class="log-entry">
+                                <span class="log-time">10:15:23</span>
+                                <span class="log-info">[INFO]</span> Server started on port 443
+                            </div>
+                            <div class="log-entry">
+                                <span class="log-time">10:16:45</span>
+                                <span class="log-warning">[WARNING]</span> Slow response detected for /api/analytics/reports/monthly (1245ms)
+                            </div>
+                            <div class="log-entry">
+                                <span class="log-time">10:18:12</span>
+                                <span class="log-error">[ERROR]</span> 404 Not Found: /api/products/discontinued
+                            </div>
+                            <div class="log-entry">
+                                <span class="log-time">10:20:34</span>
+                                <span class="log-error">[ERROR]</span> 500 Internal Server Error: /api/inventory/sync (Database connection timeout)
+                            </div>
+                            <div class="log-entry">
+                                <span class="log-time">10:22:15</span>
+                                <span class="log-info">[INFO]</span> Cache cleared for product catalog
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="web-performance" class="tab-pane">
+                        <div class="metric-charts">
+                            <div class="chart">
+                                <div class="chart-title">Server Load</div>
+                                <div class="chart-placeholder">Server load chart</div>
+                            </div>
+                            <div class="chart">
+                                <div class="chart-title">Memory Usage</div>
+                                <div class="chart-placeholder">Memory usage chart</div>
+                            </div>
+                        </div>
+                        
+                        <h4>Worker Processes</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>CPU</th>
+                                    <th>Memory</th>
+                                    <th>Connections</th>
+                                    <th>Uptime</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>worker-1</td>
+                                    <td>32%</td>
+                                    <td>256 MB</td>
+                                    <td>124</td>
+                                    <td>2d 14h</td>
+                                </tr>
+                                <tr>
+                                    <td>worker-2</td>
+                                    <td>28%</td>
+                                    <td>248 MB</td>
+                                    <td>118</td>
+                                    <td>2d 14h</td>
+                                </tr>
+                                <tr>
+                                    <td>worker-3</td>
+                                    <td>35%</td>
+                                    <td>262 MB</td>
+                                    <td>136</td>
+                                    <td>2d 14h</td>
+                                </tr>
+                                <tr>
+                                    <td>worker-4</td>
+                                    <td>24%</td>
+                                    <td>245 MB</td>
+                                    <td>108</td>
+                                    <td>2d 14h</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>    
+            
