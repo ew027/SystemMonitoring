@@ -5,6 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Systems Monitoring Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        // Function to toggle system content visibility
+        function toggleSystem(systemId) {
+            const systemContent = document.getElementById(systemId);
+            const systemHeader = systemContent.previousElementSibling;
+
+            // Toggle active class on system content
+            systemContent.classList.toggle('active');
+
+            // Toggle expanded class on system header for arrow animation
+            systemHeader.classList.toggle('expanded');
+        }
+
+        // Function to switch between tabs within a system panel
+        function switchTab(tabId, prefix) {
+            // Get all tabs and panes for this system
+            const tabs = document.querySelectorAll(`[onclick*="switchTab("][onclick*="${prefix}"]`).forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Get all tab panes with the same prefix
+            const panes = document.querySelectorAll(`[id^="${prefix}-"]`).forEach(pane => {
+                pane.classList.remove('active');
+            });
+
+            // Activate the selected tab and pane
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`[onclick*="${tabId}"]`).classList.add('active');
+        }
+    </script>
     <style>
         :root {
             --primary: #2563eb;
