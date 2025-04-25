@@ -1,8 +1,94 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model dynamic
+@{
+    ViewData["Title"] = "Systems Monitoring Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+<div class="dashboard-header">
+    <h1 class="dashboard-title">Systems Overview</h1>
+    <div class="status-summary">
+        <div class="status-indicator">
+            <div class="indicator-dot status-green"></div>
+            <span>@Model.Summary.Healthy Healthy</span>
+        </div>
+        <div class="status-indicator">
+            <div class="indicator-dot status-yellow"></div>
+            <span>@Model.Summary.Warning Warning</span>
+        </div>
+        <div class="status-indicator">
+            <div class="indicator-dot status-red"></div>
+            <span>@Model.Summary.Critical Critical</span>
+        </div>
+    </div>
 </div>
+
+<div class="systems-list">
+    @foreach (var system in Model.Systems)
+    {
+        <div class="system-bar" id="system-bar-@system.Id">
+            <div class="system-header status-@system.Status" data-system-id="@system.Id">
+                <div class="system-title">
+                    <i class="fas @system.Icon"></i>
+                    @system.Name
+                </div>
+                <div class="system-health">
+                    @foreach (var metric in system.Metrics)
+                    {
+                        <div class="health-metric">
+                            <div class="health-icon @metric.Key">
+                                @switch (metric.Key)
+                                {
+                                    case "cpu":
+                                        <i class="fas fa-microchip"></i>
+                                        break;
+                                    case "memory":
+                                        <i class="fas fa-memory"></i>
+                                        break;
+                                    case "disk":
+                                        <i class="fas fa-hdd"></i>
+                                        break;
+                                    case "response":
+                                        <i class="fas fa-tachometer-alt"></i>
+                                        break;
+                                    case "requests":
+                                        <i class="fas fa-exchange-alt"></i>
+                                        break;
+                                    case "users":
+                                        <i class="fas fa-users"></i>
+                                        break;
+                                    case "hit-rate":
+                                        <i class="fas fa-percentage"></i>
+                                        break;
+                                    case "traffic":
+                                        <i class="fas fa-network-wired"></i>
+                                        break;
+                                    default:
+                                        <i class="fas fa-chart-line"></i>
+                                        break;
+                                }
+                            </div>
+                            <span>@metric.Value</span>
+                        </div>
+                    }
+                    <i class="fas fa-chevron-down arrow-icon"></i>
+                </div>
+            </div>
+            <div id="@system.Id" class="system-content">
+                <!-- System content will be loaded here via AJAX -->
+                <div class="loading-indicator">
+                    <i class="fas fa-spinner fa-spin"></i> Loading system details...
+                </div>
+            </div>
+        </div>
+    }
+</div>
+</div>
+
+@section Scripts {
+    <script>
+        // Initialize dashboard on document ready
+        $(document).ready(function () {
+            Dashboard.init();
+        });
+    </script>
+}

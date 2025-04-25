@@ -1,0 +1,93 @@
+﻿@model SystemsMonitoring.Models.SystemDetailsViewModel
+
+<div id="@Model.Id-overview" class="tab-pane active">
+    <div class="metric-charts">
+        @if (Model.Id == "db-server")
+        {
+            <div class="chart">
+                <div class="chart-title">Database Connections</div>
+                <div class="chart-placeholder">Connection trend chart</div>
+            </div>
+            <div class="chart">
+                <div class="chart-title">Query Response Time</div>
+                <div class="chart-placeholder">Response time chart</div>
+            </div>
+        }
+        else
+        {
+            <div class="chart">
+                <div class="chart-title">System Load</div>
+                <div class="chart-placeholder">Load trend chart</div>
+            </div>
+            <div class="chart">
+                <div class="chart-title">Memory Usage</div>
+                <div class="chart-placeholder">Memory usage chart</div>
+            </div>
+        }
+    </div>
+
+    @if (Model.Id == "db-server" && Model.ActiveConnections != null && Model.ActiveConnections.Any())
+    {
+        <h4>Active Connections</h4>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Host</th>
+                    <th>Database</th>
+                    <th>Command</th>
+                    <th>Time</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var conn in Model.ActiveConnections)
+                {
+                    <tr>
+                        <td>@conn["id"]</td>
+                        <td>@conn["user"]</td>
+                        <td>@conn["host"]</td>
+                        <td>@conn["database"]</td>
+                        <td>@conn["command"]</td>
+                        <td>@conn["time"]</td>
+                        <td>@conn["state"]</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <h4>System Information</h4>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Attribute</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var metric in Model.Metrics)
+                {
+                    <tr>
+                        <td>@(char.ToUpper(metric.Key[0]) + metric.Key.Substring(1))</td>
+                        <td>@metric.Value</td>
+                    </tr>
+                }
+                <tr>
+                    <td>Status</td>
+                    <td>@(char.ToUpper(Model.Status[0]) + Model.Status.Substring(1))</td>
+                </tr>
+                <tr>
+                    <td>Uptime</td>
+                    <td>5d 8h 23m</td>
+                </tr>
+                <tr>
+                    <td>Last Reboot</td>
+                    <td>2025-04-11 08:15:23</td>
+                </tr>
+            </tbody>
+        </table>
+    }
+</div>

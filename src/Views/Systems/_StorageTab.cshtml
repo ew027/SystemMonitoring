@@ -1,0 +1,88 @@
+﻿@model SystemsMonitoring.Models.SystemDetailsViewModel
+
+<div id="@Model.Id-storage" class="tab-pane active">
+    <div class="metric-charts">
+        <div class="chart">
+            <div class="chart-title">Database Size Growth</div>
+            <div class="chart-placeholder">Size growth chart</div>
+        </div>
+        <div class="chart">
+            <div class="chart-title">Disk Space Usage</div>
+            <div class="chart-placeholder">Disk usage chart</div>
+        </div>
+    </div>
+
+    <h4>Database Sizes</h4>
+    @if (Model.DatabaseSizes != null && Model.DatabaseSizes.Any())
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Database</th>
+                    <th>Size</th>
+                    <th>Tables</th>
+                    <th>Indexes</th>
+                    <th>Growth (7d)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var db in Model.DatabaseSizes)
+                {
+                    <tr>
+                        <td>@db["database"]</td>
+                        <td>@db["size"]</td>
+                        <td>@db["tables"]</td>
+                        <td>@db["indexes"]</td>
+                        <td>@db["growth"]</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="info-message">
+            <i class="fas fa-info-circle"></i> No database size information available.
+        </div>
+    }
+
+    <h4>Storage Health</h4>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Drive</th>
+                <th>Total</th>
+                <th>Used</th>
+                <th>Free</th>
+                <th>Usage</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>/dev/sda1 (System)</td>
+                <td>500 GB</td>
+                <td>125 GB</td>
+                <td>375 GB</td>
+                <td>25%</td>
+                <td><span class="badge badge-success">Healthy</span></td>
+            </tr>
+            <tr>
+                <td>/dev/sdb1 (Data)</td>
+                <td>2 TB</td>
+                <td>1.78 TB</td>
+                <td>220 GB</td>
+                <td>89%</td>
+                <td><span class="badge badge-warning">Warning</span></td>
+            </tr>
+            <tr>
+                <td>/dev/sdc1 (Backup)</td>
+                <td>4 TB</td>
+                <td>2.4 TB</td>
+                <td>1.6 TB</td>
+                <td>60%</td>
+                <td><span class="badge badge-success">Healthy</span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,74 @@
+﻿@model SystemsMonitoring.Models.SystemDetailsViewModel
+
+<div id="@Model.Id-queries" class="tab-pane active">
+    <h4>Slow Queries (Last 24h)</h4>
+    @if (Model.SlowQueries != null && Model.SlowQueries.Any())
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Query</th>
+                    <th>Execution Time</th>
+                    <th>Rows Examined</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var query in Model.SlowQueries)
+                {
+                    <tr>
+                        <td>@query["query"]</td>
+                        <td>@query["executionTime"]</td>
+                        <td>@query["rowsExamined"]</td>
+                        <td>@query["timestamp"]</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="info-message">
+            <i class="fas fa-info-circle"></i> No slow queries recorded in the last 24 hours.
+        </div>
+    }
+
+    <div class="metric-charts">
+        <div class="chart">
+            <div class="chart-title">Query Execution Times</div>
+            <div class="chart-placeholder">Query times chart</div>
+        </div>
+        <div class="chart">
+            <div class="chart-title">Query Types Distribution</div>
+            <div class="chart-placeholder">Query types chart</div>
+        </div>
+    </div>
+
+    <h4>Query Statistics</h4>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Total Queries (24h)</td>
+                <td>1,245,678</td>
+            </tr>
+            <tr>
+                <td>Average Query Time</td>
+                <td>0.45s</td>
+            </tr>
+            <tr>
+                <td>Slow Queries (>1s)</td>
+                <td>243 (0.02%)</td>
+            </tr>
+            <tr>
+                <td>Failed Queries</td>
+                <td>18 (0.001%)</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

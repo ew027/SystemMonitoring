@@ -1,0 +1,40 @@
+﻿@model SystemsMonitoring.Models.SystemDetailsViewModel
+
+<div id="@Model.Id-traffic" class="tab-pane active">
+    <div class="metric-charts">
+        <div class="chart">
+            <div class="chart-title">Requests per Minute</div>
+            <div class="chart-placeholder">Requests chart</div>
+        </div>
+        <div class="chart">
+            <div class="chart-title">Response Time (ms)</div>
+            <div class="chart-placeholder">Response time chart</div>
+        </div>
+    </div>
+    
+    <h4>Top URLs (Last Hour)</h4>
+    @if (Model.TopUrls != null && Model.TopUrls.Any())
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>URL</th>
+                    <th>Requests</th>
+                    <th>Avg. Response</th>
+                    <th>Error Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var url in Model.TopUrls)
+                {
+                    <tr>
+                        <td>@url["url"]</td>
+                        <td>@url["requests"]</td>
+                        <td>@url["avgResponse"]</td>
+                        <td>@url["errorRate"]</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    </div>

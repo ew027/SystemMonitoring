@@ -1,0 +1,59 @@
+﻿@model SystemsMonitoring.Models.SystemDetailsViewModel
+
+<div class="panel-header">
+    <h3 class="panel-title">@Model.Name Details</h3>
+    <div class="actions">
+        @if (Model.Id == "db-server")
+        {
+            <button class="button primary-button">Run Diagnostics</button>
+            <button class="button secondary-button">Restart Service</button>
+        }
+        else if (Model.Id == "web-server")
+        {
+            <button class="button primary-button">View Traffic</button>
+            <button class="button secondary-button">Clear Cache</button>
+        }
+        else
+        {
+            <button class="button primary-button">Monitor</button>
+            <button class="button secondary-button">Settings</button>
+        }
+    </div>
+</div>
+
+<div class="panel-tabs">
+    @if (Model.Id == "db-server")
+    {
+        <div class="panel-tab active" data-tab-id="overview">Overview</div>
+        <div class="panel-tab" data-tab-id="queries">Queries</div>
+        <div class="panel-tab" data-tab-id="storage">Storage</div>
+    }
+    else if (Model.Id == "web-server")
+    {
+        <div class="panel-tab active" data-tab-id="traffic">Traffic</div>
+        <div class="panel-tab" data-tab-id="errors">Errors</div>
+        <div class="panel-tab" data-tab-id="performance">Performance</div>
+    }
+    else
+    {
+        <div class="panel-tab active" data-tab-id="overview">Overview</div>
+        <div class="panel-tab" data-tab-id="details">Details</div>
+        <div class="panel-tab" data-tab-id="logs">Logs</div>
+    }
+</div>
+
+<div class="tab-content">
+    @* Initial tab content will be loaded here via AJAX *@
+    @if (Model.Id == "db-server")
+    {
+        @await Html.PartialAsync("_OverviewTab", Model)
+    }
+    else if (Model.Id == "web-server")
+    {
+        @await Html.PartialAsync("_TrafficTab", Model)
+    }
+    else
+    {
+        @await Html.PartialAsync("_OverviewTab", Model)
+    }
+</div>
